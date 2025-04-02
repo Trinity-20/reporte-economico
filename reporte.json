@@ -1,0 +1,41 @@
+{
+    "alumno": "Juan Pérez",
+    "programa": "Maestría en Economía",
+    "promocion": "2025",
+    "historial_pagos": [
+        {
+            "n": 1,
+            "año": 2025,
+            "fecha": "01/01/2025",
+            "codigo": "1234",
+            "cuotas": "1",
+            "concepto": "Matrícula",
+            "monto": 1500
+        },
+        {
+            "n": 2,
+            "año": 2025,
+            "fecha": "01/02/2025",
+            "codigo": "5678",
+            "cuotas": "2",
+            "concepto": "Pensión",
+            "monto": 1200
+        }
+    ],
+    "pensiones": [
+        {
+            "concepto": "Matrícula",
+            "monto": 1500
+        },
+        {
+            "concepto": "Pensión",
+            "monto": 1200
+        }
+    ],
+    "deudas": [
+        {
+            "concepto": "Pensión del semestre anterior",
+            "monto": 800
+        }
+    ]
+}
