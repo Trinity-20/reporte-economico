@@ -34,8 +34,26 @@
     ],
     "deudas": [
         {
-            "concepto": "Pensión del semestre anterior",
-            "monto": 800
+            "codigo": "1234",
+            "cuotas": "1",
+            "monto": 1500,
+            "concepto": "Pensión pendiente",
+            "total": 1500
+        },
+        {
+            "codigo": "5678",
+            "cuotas": "2",
+            "monto": 2400,
+            "concepto": "Matrícula pendiente",
+            "total": 2400
         }
-    ]
+    ],
+    "costo_pension": 1200,
+    "num_cuotas": 2,
+    "monto_pension": 600,
+    "costo_matricula": 1500,
+    "num_matriculas": 1,
+    "monto_matricula": 1500,
+    "pagos_por_ciclo": 5,
+    "costo_total": 2700
 }

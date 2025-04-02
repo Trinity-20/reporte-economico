@@ -9,6 +9,9 @@ def cargar_datos_json(filename="reporte.json"):
     try:
         with open(filename, "r", encoding="utf-8") as file:
             return json.load(file)
+        
+        dibujar_costo_maestria(c, width, y_pos, datos_json)
+        
     except Exception as e:
         print(f"Error al cargar datos: {e}")
         return {}
@@ -16,8 +19,19 @@ def cargar_datos_json(filename="reporte.json"):
 def dibujar_costo_maestria(c, width, y_pos, datos):
     """Dibuja la sección de costos de la maestría en el PDF"""
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y_pos, "COSTOS DE LA MAESTRÍA")
-    y_pos -= 20
+    texto_titulo = "COSTOS DE LA MAESTRÍA"
+    
+    # Obtener el ancho del texto
+    texto_width = c.stringWidth(texto_titulo, "Helvetica-Bold", 12)
+    
+    # Dibujar el texto
+    c.drawString(50, y_pos, texto_titulo)
+    
+    # Dibujar una línea debajo del título con la misma longitud que el texto
+    c.setLineWidth(1)  # Grosor de la línea
+    c.line(50, y_pos - 5, 50 + texto_width, y_pos - 5)  # Línea del mismo tamaño que el texto
+    
+    y_pos -= 20  # Mover la posición hacia abajo después de la línea
 
     c.setFont("Helvetica", 11)
     datos_costos = [
@@ -42,6 +56,14 @@ def crear_tabla(c, title, table_data, y_pos, page_width):
     c.setFont("Helvetica-Bold", 12)
     c.drawCentredString(page_width / 2, y_pos, title)
     
+    # Modificación para la tabla de matrícula
+    if title == "MATRÍCULA":
+        table_data = [["AÑO", "FECHA", "COD. BCO.", "N° CUOTA", "CONCEPTO", "MONTO"]] + table_data
+
+    # Modificación para la tabla de deudas
+    if title == "REPORTE INFORMATIVO DE DEUDAS":
+        table_data = [["CÓDIGO", "CUOTAS", "MONTO", "CONCEPTO", "TOTAL"]] + table_data
+
     table = Table(table_data)
     table.setStyle(TableStyle([ 
         ('BACKGROUND', (0, 0), (-1, 0), colors.darkgray),
@@ -60,31 +82,33 @@ def crear_tabla(c, title, table_data, y_pos, page_width):
 
     return y_pos - table_height - 40
 
-def agregar_firma(c, width, y_pos):
+def agregar_firma(c, width, height):
     """Agrega una sección para la firma centrada en la parte inferior del reporte"""
+    y_pos = 100  # Posición fija en la parte inferior de la página
+
     c.setFont("Helvetica-Bold", 12)
     
     # Texto de la firma centrado
     c.drawCentredString(width / 2, y_pos, "Firma del Responsable:")
     
-    # Espacio para la firma centrado
+    # Espacio para la firma centrado, ajustando la longitud de la línea
     c.setLineWidth(1)
-    c.line(20, y_pos - 20, width - 50, y_pos - 20)  # Línea para la firma
+    line_length = 200  # Ajusta la longitud de la línea
+    c.line((width - line_length) / 2, y_pos - 20, (width + line_length) / 2, y_pos - 20)  # Línea para la firma
     
     # Nombre, cargo y fecha centrados
     c.setFont("Helvetica", 11)
-    c.drawCentredString(width / 2, y_pos - 40, "Nombre: ________________________________")#ejemplo
+    c.drawCentredString(width / 2, y_pos - 40, "Nombre: ________________________________")
     c.drawCentredString(width / 2, y_pos - 60, "Cargo: ________________________________")
     c.drawCentredString(width / 2, y_pos - 80, "Fecha: ________________________________")
-    
-    return y_pos - 100
+
 
 def generar_reporte_economico(datos, filename="reporte_economico_mejorado.pdf"):
     c = canvas.Canvas(filename, pagesize=A4)
     width, height = A4
 
     # Encabezado
-    c.setFillColor(colors.darkgrey)
+    c.setFillColor(colors.green)
     c.rect(0, height - 80, width, 80, fill=True)
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 16)
@@ -96,7 +120,7 @@ def generar_reporte_economico(datos, filename="reporte_economico_mejorado.pdf"):
 
     # Información básica
     c.setFillColor(colors.black)
-    c.setFont("Helvetica", 11)
+    c.setFont("Helvetica-Bold", 14)
     y_position = height - 100
     c.drawString(50, y_position, f"INFORME ECONÓMICO N° -2025-OAE-EPG-UNAP")
     y_position -= 20
@@ -114,10 +138,10 @@ def generar_reporte_economico(datos, filename="reporte_economico_mejorado.pdf"):
     tablas = [
         ("PENSIÓN", [["N°", "AÑO", "FECHA", "COD. BCO.", "CUOTAS", "CONCEPTO", "PAGO"]] +
          [[p["n"], p["año"], p["fecha"], p["codigo"], p["cuotas"], p["concepto"], p["monto"]] for p in datos['historial_pagos']]), 
-        ("MATRÍCULA", [["CONCEPTO", "MONTO"]] +
-         [[p["concepto"], p["monto"]] for p in datos['pensiones'] if p["concepto"] == "Matrícula"]),
-        ("REPORTE INFORMATIVO DE DEUDAS", [["CONCEPTO", "MONTO PENDIENTE"]] +
-         [[d["concepto"], d["monto"]] for d in datos['deudas']])
+        ("MATRÍCULA", [["AÑO", "FECHA", "COD. BCO.", "N° CUOTA", "CONCEPTO", "MONTO"]] +
+         [[p["año"], p["fecha"], p["codigo"], p["cuotas"], p["concepto"], f"S/ {p['monto']}"] for p in datos['historial_pagos'] if p["concepto"] == "Matrícula"]),
+        ("REPORTE INFORMATIVO DE DEUDAS", [["CÓDIGO", "CUOTAS", "MONTO", "CONCEPTO", "TOTAL"]] +
+         [[d["codigo"], d["cuotas"], f"S/ {d['monto']}", d["concepto"], f"S/ {d['total']}"] for d in datos['deudas']])
     ]
 
     for titulo, data in tablas:
