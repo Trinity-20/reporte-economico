@@ -2,9 +2,12 @@ import json
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+from reportlab.lib.colors import Color
 from reportlab.platypus import Table, TableStyle
 from datetime import datetime
 
+
+unap_green = Color(12/255, 76/255, 68/255)  # Normalizando valores entre 0 y 1
 def cargar_datos_json(filename="reporte.json"):
     try:
         with open(filename, "r", encoding="utf-8") as file:
@@ -66,7 +69,7 @@ def crear_tabla(c, title, table_data, y_pos, page_width):
 
     table = Table(table_data)
     table.setStyle(TableStyle([ 
-        ('BACKGROUND', (0, 0), (-1, 0), colors.darkgray),
+        ('BACKGROUND', (0, 0), (-1, 0), unap_green),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -108,7 +111,7 @@ def generar_reporte_economico(datos, filename="reporte_economico_mejorado.pdf"):
     width, height = A4
 
     # Encabezado
-    c.setFillColor(colors.green)
+    c.setFillColor(unap_green)
     c.rect(0, height - 80, width, 80, fill=True)
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 16)
