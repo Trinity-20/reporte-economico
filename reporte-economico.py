@@ -3,6 +3,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.colors import Color
+from reportlab.lib.utils import ImageReader
 from reportlab.platypus import Table, TableStyle
 from datetime import datetime
 
@@ -58,15 +59,18 @@ def crear_tabla(c, title, table_data, y_pos, page_width):
     """Crea y dibuja una tabla en el PDF"""
     c.setFont("Helvetica-Bold", 12)
     c.drawCentredString(page_width / 2, y_pos, title)
-    
-    # Modificación para la tabla de matrícula
-    if title == "MATRÍCULA":
-        table_data = [["AÑO", "FECHA", "COD. BCO.", "N° CUOTA", "CONCEPTO", "MONTO"]] + table_data
 
-    # Modificación para la tabla de deudas
-    if title == "REPORTE INFORMATIVO DE DEUDAS":
-        table_data = [["CÓDIGO", "CUOTAS", "MONTO", "CONCEPTO", "TOTAL"]] + table_data
+    # 🔽 Verificar si la primera fila ya es el encabezado y evitar duplicación
+    encabezados_matricula = ["AÑO", "FECHA", "COD. BCO.", "N° CUOTA", "CONCEPTO", "MONTO"]
+    encabezados_deuda = ["CÓDIGO", "CUOTAS", "MONTO", "CONCEPTO", "TOTAL"]
 
+    if title == "MATRÍCULA" and table_data[0] != encabezados_matricula:
+        table_data.insert(0, encabezados_matricula)
+
+    if title == "REPORTE INFORMATIVO DE DEUDAS" and table_data[0] != encabezados_deuda:
+        table_data.insert(0, encabezados_deuda)
+
+    # Crear la tabla con los datos corregidos
     table = Table(table_data)
     table.setStyle(TableStyle([ 
         ('BACKGROUND', (0, 0), (-1, 0), unap_green),
@@ -84,6 +88,7 @@ def crear_tabla(c, title, table_data, y_pos, page_width):
     table.drawOn(c, x_pos, y_pos - table_height - 20)
 
     return y_pos - table_height - 40
+
 
 def agregar_firma(c, width, height):
     """Agrega una sección para la firma centrada en la parte inferior del reporte"""
@@ -113,11 +118,19 @@ def generar_reporte_economico(datos, filename="reporte_economico_mejorado.pdf"):
     # Encabezado
     c.setFillColor(unap_green)
     c.rect(0, height - 80, width, 80, fill=True)
+    
+     # 🔽 Agregar imagen en el lado izquierdo del encabezado
+    try:
+        imagen = ImageReader("20.png")
+        c.drawImage(imagen, 20, height - 70, width=60, height=60, preserveAspectRatio=True, mask='auto')
+    except Exception as e:
+        print(f"⚠️ Error al cargar imagen: {e}")
+        
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(width / 2, height - 35, "UNIVERSIDAD NACIONAL DE LA AMAZONIA PERUANA")
     c.setFont("Helvetica-Bold", 13)
-    c.drawCentredString(width / 2, height - 55, "ESCUELA DE POSTGRADO JOSE TORRES VASQUEZ")
+    c.drawCentredString(width / 2, height - 55, "CENTRO DE IDIOMAS DE LA UNAP (CI-UNAP)")
     c.setFont("Helvetica-Bold", 12)
     c.drawCentredString(width / 2, height - 75, "REPORTE ECONÓMICO")
 
